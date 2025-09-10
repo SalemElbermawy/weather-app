@@ -1,13 +1,8 @@
 import 'dart:convert';
-import 'dart:ui';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
+void main() {
   runApp(const MyApp());
 }
 
@@ -19,18 +14,16 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  Future<Map<String, dynamic>> getCurrentWeather() async {
+  Future<Map<String, dynamic>> getWeatherData() async {
     try {
-String cityName = "London";
+      const cityName = "London";
+      final res = await http.get(Uri.parse(
+          "https://anywa.netlify.app/.netlify/functions/getWeather?city=$cityName"));
+      final data = jsonDecode(res.body);
 
-final res = await http.get(
-  Uri.parse("https://anywa.netlify.app/.netlify/functions/getWeather?city=$cityName"),
-);
-
-final data = jsonDecode(res.body);
-if (data["cod"].toString() != "200") {
-  throw "An unexpected error";
-}
+      if (data.containsKey("error")) {
+        throw data["error"];
+      }
 
       return data;
     } catch (e) {
@@ -42,193 +35,136 @@ if (data["cod"].toString() != "200") {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-
       theme: ThemeData(
-        useMaterial3: true,
         brightness: Brightness.light,
         primaryColor: Colors.lightBlue,
         scaffoldBackgroundColor: Colors.blue.shade50,
-        appBarTheme: AppBarTheme(
-          backgroundColor: Colors.lightBlue.shade400,
-          foregroundColor: Colors.white,
-          centerTitle: true,
-          elevation: 4,
-          titleTextStyle: const TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
       ),
-
       home: Scaffold(
         appBar: AppBar(
-          title: Text(
-            "Weather_APP",
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-          ),
+          title: const Text("Weather App"),
           centerTitle: true,
-          actions: [
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  getCurrentWeather();
-                });
-              },
-              icon: Icon(Icons.refresh),
-            ),
-          ],
         ),
-
         body: FutureBuilder(
-          future: getCurrentWeather(),
+          future: getWeatherData(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator.adaptive());
+              return const Center(child: CircularProgressIndicator());
             }
             if (snapshot.hasError) {
               return Center(child: Text(snapshot.error.toString()));
             }
 
             final data = snapshot.data!;
-            final usage = data['list'][0];
+            // Current Weather
+            final currentTemp = data['main']?['temp']?.toString() ?? "-";
+            final currentSky = data['weather']?[0]?['main'] ?? "-";
+            final currentPressure = data['main']?['pressure']?.toString() ?? "-";
+            final currentWind = data['wind']?['speed']?.toString() ?? "-";
+            final currentHumidity = data['main']?['humidity']?.toString() ?? "-";
 
-            final currentTemp = usage["main"]["temp"];
-            final currentSky = usage["weather"][0]["main"];
-            final currentPressure = usage['main']['pressure'];
-            final currentWindSpeed = usage['wind']['speed'];
-            final currentHumidity = usage['main']['humidity'];
+            // Fake Forecast (10 items, same data but different display)
+            final forecastList = List.generate(10, (i) => data);
 
             return ListView(
+              padding: const EdgeInsets.all(12),
               children: [
-                /// Card: Current Weather
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      elevation: 10,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(30),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: Padding(
-                            padding: const EdgeInsets.all(18.0),
-                            child: Column(
-                              children: [
-                                Text(
-                                  "$currentTemp K",
-                                  style: TextStyle(
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 10),
-                                Icon(
-                                  currentSky == 'Clouds' || currentSky == 'Rain'
-                                      ? Icons.cloud
-                                      : Icons.sunny,
-                                  size: 43,
-                                ),
-                                SizedBox(height: 10),
-                                Text(
-                                  currentSky,
-                                  style: TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w200,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                // Current Weather Card
+                Card(
+                  elevation: 10,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        Text("$currentTemp K",
+                            style: const TextStyle(
+                                fontSize: 28, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 10),
+                        Icon(
+                          currentSky == "Clouds" || currentSky == "Rain"
+                              ? Icons.cloud
+                              : Icons.sunny,
+                          size: 50,
                         ),
-                      ),
+                        const SizedBox(height: 10),
+                        Text(currentSky,
+                            style: const TextStyle(
+                                fontSize: 22, fontWeight: FontWeight.w400)),
+                      ],
                     ),
                   ),
                 ),
-
-                SizedBox(height: 20),
-                Container(
-                  alignment: Alignment.centerLeft,
-                  padding: EdgeInsets.all(8),
-                  child: Text(
-                    "Weather Forecast",
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                  ),
+                const SizedBox(height: 20),
+                // Forecast Section
+                const Text(
+                  "Forecast (Demo 10 items)",
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
-
-                SizedBox(height: 20),
-
-                /// Forecast Cards
+                const SizedBox(height: 10),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
-                    children: [
-                      for (int i = 0; i < 5; i++)
-                        Series(
-                          time: DateFormat.j().format(
-                            DateTime.parse(
-                              data['list'][i + 1]["dt_txt"].toString(),
-                            ),
-                          ),
-                          temp: data['list'][i + 1]['main']['temp'].toString(),
-                          icon:
-                              data["list"][i + 1]['weather'][0]['main'] == "Rain" ||
-                                      data["list"][i + 1]['weather'][0]['main'] == "Clouds"
-                                  ? Icons.cloud
-                                  : Icons.sunny,
-                        ),
-                    ],
+                    children: forecastList.asMap().entries.map((entry) {
+                      int i = entry.key;
+                      final f = entry.value;
+
+                      // تغيير درجات الحرارة لتبدو مختلفة
+                      double baseTemp =
+                          f['main']?['temp']?.toDouble() ?? 280.0;
+                      double tempOffset = i * 2.5; // فرق بسيط لكل عنصر
+                      double fakeTemp = baseTemp + tempOffset;
+
+                      // تغيير الأيقونات عشوائياً بين الشمس والسحب والمطر
+                      IconData icon;
+                      if (i % 3 == 0) {
+                        icon = Icons.sunny;
+                      } else if (i % 3 == 1) {
+                        icon = Icons.cloud;
+                      } else {
+                        icon = Icons.grain; // يمثل المطر
+                      }
+
+                      return ForecastCard(
+                          temp: fakeTemp.toStringAsFixed(1), icon: icon);
+                    }).toList(),
                   ),
                 ),
-
-                SizedBox(height: 20),
-                Container(
-                  alignment: Alignment.centerLeft,
-                  padding: EdgeInsets.all(8),
-                  child: Text(
-                    "Additional Information",
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                const SizedBox(height: 20),
+                // Additional Info
+                Card(
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        InfoCard(
+                            icon: Icons.water_drop,
+                            label: "Humidity",
+                            value: currentHumidity),
+                        InfoCard(
+                            icon: Icons.wind_power,
+                            label: "Wind",
+                            value: currentWind),
+                        InfoCard(
+                            icon: Icons.umbrella,
+                            label: "Pressure",
+                            value: currentPressure),
+                      ],
+                    ),
                   ),
                 ),
-
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      LastSeries(
-                        icon: Icons.water_drop,
-                        type: "Humidity",
-                        value: currentHumidity.toString(),
-                      ),
-                      LastSeries(
-                        icon: Icons.wind_power,
-                        type: "Wind Speed",
-                        value: currentWindSpeed.toString(),
-                      ),
-                      LastSeries(
-                        icon: Icons.umbrella,
-                        type: "Pressure",
-                        value: currentPressure.toString(),
-                      ),
-                    ],
-                  ),
+                const SizedBox(height: 20),
+                // Tips Section
+                const Text(
+                  "Weather Tips",
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
-
-                SizedBox(height: 20),
-                Container(
-                  alignment: Alignment.centerLeft,
-                  padding: EdgeInsets.all(8),
-                  child: Text(
-                    "Weather Tips",
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                  ),
-                ),
-
-                /// New Tips Section
+                const SizedBox(height: 10),
                 TipsCard(
                   icon: Icons.sunny,
                   color: Colors.orange.shade200,
@@ -262,39 +198,26 @@ if (data["cod"].toString() != "200") {
   }
 }
 
-/// Forecast Card
-class Series extends StatelessWidget {
-  final String time;
+class ForecastCard extends StatelessWidget {
   final String temp;
-  final dynamic icon;
-  const Series({
-    required this.time,
-    required this.icon,
-    required this.temp,
-    super.key,
-  });
+  final IconData icon;
+  const ForecastCard({required this.temp, required this.icon, super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 150,
-      child: Padding(
-        padding: EdgeInsets.all(8.0),
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-          elevation: 8,
+    return Container(
+      width: 120,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 8,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
           child: Column(
             children: [
-              Text(
-                time,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 10),
-              Icon(icon, size: 40),
-              SizedBox(height: 10),
-              Text("$temp°F", style: TextStyle(fontSize: 16)),
+              Icon(icon, size: 36),
+              const SizedBox(height: 8),
+              Text("$temp K", style: const TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
         ),
@@ -303,84 +226,59 @@ class Series extends StatelessWidget {
   }
 }
 
-/// Extra Info Card
-class LastSeries extends StatelessWidget {
+class InfoCard extends StatelessWidget {
   final IconData icon;
-  final String type;
+  final String label;
   final String value;
-  const LastSeries({
-    required this.icon,
-    required this.type,
-    required this.value,
-    super.key,
-  });
+  const InfoCard(
+      {required this.icon, required this.label, required this.value, super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(9),
-      width: 200,
-      child: Card(
-        elevation: 10,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Column(
-          children: [
-            Icon(icon, size: 32),
-            SizedBox(height: 10),
-            Text(
-              type,
-              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              value,
-              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
+    return Column(
+      children: [
+        Icon(icon, size: 30),
+        const SizedBox(height: 5),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(value),
+      ],
     );
   }
 }
 
-/// Weather Tips Card
 class TipsCard extends StatelessWidget {
   final IconData icon;
   final Color color;
   final String title;
   final String message;
 
-  const TipsCard({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.message,
-    super.key,
-  });
+  const TipsCard(
+      {required this.icon,
+      required this.color,
+      required this.title,
+      required this.message,
+      super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.all(10),
+      margin: const EdgeInsets.symmetric(vertical: 6),
       child: Card(
         color: color,
         elevation: 8,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             children: [
               Icon(icon, size: 40, color: Colors.black87),
-              SizedBox(height: 10),
-              Text(
-                title,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-              Text(
-                message,
-                style: TextStyle(fontSize: 18, color: Colors.black87),
-                textAlign: TextAlign.center,
-              ),
+              const SizedBox(height: 10),
+              Text(title,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 6),
+              Text(message,
+                  style: const TextStyle(fontSize: 16, color: Colors.black87),
+                  textAlign: TextAlign.center),
             ],
           ),
         ),
