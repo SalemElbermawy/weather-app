@@ -1,9 +1,9 @@
-const fetch = require('node-fetch'); // للتأكد من دعم Node
+const fetch = require('node-fetch'); // احذف ده
 
 exports.handler = async function(event, context) {
   try {
-    const city = event.queryStringParameters.city; // اسم المدينة من request
-    const apiKey = "c277de7b55594a17731f1fc905f115ba"; // استبدل بمفتاحك
+    const city = event.queryStringParameters.city;
+    const apiKey = "c277de7b55594a17731f1fc905f115ba";
     const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`);
     
     if (!response.ok) {

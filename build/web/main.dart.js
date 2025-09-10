@@ -63310,7 +63310,7 @@ var $async$mL=A.P(function(a,b){if(a===1){o.push(b)
 s=p}while(true)switch(s){case 0:p=4
 n="London"
 s=7
-return A.W(A.auW(A.fg("https://YOUR_NETLIFY_SITE.netlify.app/.netlify/functions/getWeather?city="+A.l(n))),$async$mL)
+return A.W(A.auW(A.fg("https://anywa.netlify.app/.netlify/functions/getWeather?city="+A.l(n))),$async$mL)
 case 7:m=b
 j=m
 l=B.cs.IB(A.auJ(A.asK(j.e)).dS(j.w),null)
