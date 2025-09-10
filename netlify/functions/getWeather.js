@@ -1,7 +1,7 @@
 exports.handler = async function(event, context) {
   try {
     const city = event.queryStringParameters.city;
-    const apiKey = "YOUR_API_KEY"; // حط مفتاح OpenWeather بتاعك هنا
+    const apiKey = "c277de7b55594a17731f1fc905f115ba"; // حط مفتاح OpenWeather بتاعك هنا
 
     // Fetch data from OpenWeather API
     const response = await fetch(
