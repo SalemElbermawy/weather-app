@@ -28,10 +28,10 @@ final res = await http.get(
     "https://anywa.netlify.app/.netlify/functions/getWeather?city=$cityName",
   ),
 );
-      final data = jsonDecode(res.body);
-      if (data["cod"] != "200") {
-        throw "An unexpected error";
-      }
+final data = jsonDecode(res.body);
+if (data["cod"].toString() != "200") {
+  throw "An unexpected error";
+}
 
       return data;
     } catch (e) {
