@@ -1,8 +1,9 @@
 exports.handler = async function(event, context) {
   try {
     const city = event.queryStringParameters.city;
-    const apiKey = "c277de7b55594a17731f1fc905f115ba"; // ضع مفتاح OpenWeather هنا
+    const apiKey = "YOUR_API_KEY"; // حط مفتاح OpenWeather بتاعك هنا
 
+    // Fetch data from OpenWeather API
     const response = await fetch(
       `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`
     );
@@ -10,6 +11,10 @@ exports.handler = async function(event, context) {
     if (!response.ok) {
       return {
         statusCode: response.status,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
         body: JSON.stringify({ error: "Failed to fetch weather data" }),
       };
     }
@@ -18,11 +23,19 @@ exports.handler = async function(event, context) {
 
     return {
       statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
       body: JSON.stringify(data),
     };
   } catch (error) {
     return {
       statusCode: 500,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
       body: JSON.stringify({ error: error.message }),
     };
   }

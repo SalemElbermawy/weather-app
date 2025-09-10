@@ -24,10 +24,9 @@ class _MyAppState extends State<MyApp> {
 String cityName = "London";
 
 final res = await http.get(
-  Uri.parse(
-    "https://anywa.netlify.app/.netlify/functions/getWeather?city=$cityName",
-  ),
+  Uri.parse("https://anywa.netlify.app/.netlify/functions/getWeather?city=$cityName"),
 );
+
 final data = jsonDecode(res.body);
 if (data["cod"].toString() != "200") {
   throw "An unexpected error";
