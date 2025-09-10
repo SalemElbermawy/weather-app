@@ -25,10 +25,9 @@ String cityName = "London";
 
 final res = await http.get(
   Uri.parse(
-    'https://YOUR_NETLIFY_SITE.netlify.app/.netlify/functions/getWeather?city=$cityName',
+    "https://anywa.netlify.app/.netlify/functions/getWeather?city=$cityName",
   ),
 );
-
       final data = jsonDecode(res.body);
       if (data["cod"] != "200") {
         throw "An unexpected error";
