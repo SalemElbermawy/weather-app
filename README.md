@@ -1,16 +1,23 @@
-# weather_app
+# 🌦️ Weather App (Flutter Web)
 
-A new Flutter project.
+A simple weather application built with **Flutter** with full **Web** support.  
+It displays the current temperature, sky condition, humidity, wind speed, and pressure, along with hourly forecasts and useful weather tips.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## ✨ Features
+- Display current weather for a specific city (default: Berlin).
+- Temperature conversion from **Kelvin → Fahrenheit**.
+- Hourly forecast (up to 10 hours ahead).
+- Additional details: humidity, wind speed, and pressure.
+- Weather tips cards for different conditions (Sunny ☀️ / Rainy 🌧️ / Windy 💨 / Snowy ❄️).
+- Modern UI design with cards and dynamic colors.
 
-A few resources to get you started if this is your first Flutter project:
+---
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 🛠️ Requirements
+- Flutter SDK
+- An API key from OpenWeatherMap
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
