@@ -6,7 +6,7 @@ It displays the current temperature, sky condition, humidity, wind speed, and pr
 ---
 
 ## ✨ Features
-- Display current weather for a specific city (default: Berlin).
+- Display current weather for a specific city (default: Berlin) just Berlin and you can edit the code for any city you want.
 - Temperature conversion from **Kelvin → Fahrenheit**.
 - Hourly forecast (up to 10 hours ahead).
 - Additional details: humidity, wind speed, and pressure.
